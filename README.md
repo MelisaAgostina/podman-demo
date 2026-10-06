@@ -158,6 +158,10 @@ Tu imagen de contenedor ya está publicada en el repositorio remoto si obtuviste
 Writing manifest to image destination
 ```
 
-
-
+<div align="center">
+         <img width="288" height="288" alt="seal-shy" src="https://github.com/user-attachments/assets/ed6f8407-97ad-40a2-ac80-9917eab15c74" />
+</div>
+<div align="center">
+         Gracias!
+</div>
 
