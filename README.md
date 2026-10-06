@@ -1,3 +1,6 @@
+<div align="center">
+         <img width="738" height="246" alt="imagen" src="https://github.com/user-attachments/assets/588bd697-af99-459a-99a3-82ce6ec6d583" />
+</div>
 # Demo de Podman
 
 ## Requisitos previos
