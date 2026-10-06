@@ -1,45 +1,41 @@
-# Podman Demo
+# Demo de Podman
 
-***developed for Red Hat Edge to Cloud Learning Experience 2024 Hackathon by [Ryan Gniadek](mailto:rpg@redhat.com) and [Maurice Mckellar III](mailto:mmckella@redhat.com)***
+## Requisitos previos
+Podman debe estar instalado en tu máquina. Para ello, usaremos Podman Desktop. Andá a [podman-desktop.io](https://podman-desktop.io/) para descargar e instalar la aplicación.
 
-This is a lab on how to use Podman to build and run a container, and then push it to a quay.io registry.
+Dependiendo de tu sistema operativo, habrá pasos diferentes para instalar y ejecutar el comando "podman".
 
-## Prerequisites
-Podman must be installed on your machine. To do this, we will use Podman Desktop. Go to [podman-desktop.io](https://podman-desktop.io/) to download and install the application.
+También recomendamos usar VSCode como IDE. Podés descargarlo [aquí](https://code.visualstudio.com/).
 
-Depending on your operating system, there will be different steps to install and run the "podman" command.
+Por último, necesitarás tener una cuenta de Red Hat. Podés crear una [aquí](https://access.redhat.com/login).
 
-We also reccomend using VSCode as your IDE. You can download VSCode [here](https://code.visualstudio.com/).
-
-Finally, you will need to have a Red Hat account. You can create one [here](https://access.redhat.com/login).
-
-## Assignment Setup
-Inside of VSCode, open a terminal and run the following command:
+## Configuración de la tarea
+Dentro de VSCode, abrí una terminal y ejecutá el siguiente comando:
 ```bash
 git clone https://github.com/ryangniadek/podman-demo.git
 ```
 
-Then open the folder in VSCode.
+Luego abrí la carpeta en VSCode.
 
-## Introduction
-The goal of this lab is to learn:
-- What is a container, and how it's different from deploying natively or on a virtual machine
-- How to run a container image from a public registry
-- How to build a container image
-- How to deploy a container image to a public registry
+## Introducción
+El objetivo de este laboratorio es aprender:
+- Qué es un contenedor y en qué se diferencia de desplegar de forma nativa o en una máquina virtual
+- Cómo ejecutar una imagen de contenedor desde un registro público
+- Cómo construir una imagen de contenedor
+- Cómo subir una imagen de contenedor a un registro público
 
-Containers are an environment-agnostic way to package up code, configuration, and dependencies and run it anywhere a container engine (such as Podman or Docker) is installed.
+Los contenedores son una forma, independiente del entorno, de empaquetar código, configuración y dependencias, y ejecutarlos en cualquier lugar donde haya un motor de contenedores (como Podman o Docker) instalado.
 
-Both containers and virtual machines are ways of providing resource isolation and are widespread in modern application deployments. Virtual machines abstract away the hardware and emulate the entire operating system. On the other hand, containers use the underlying operating system of the host to execute, so they are much lighter weight since they only need to include the code and dependencies for a specific application.
+Tanto los contenedores como las máquinas virtuales son formas de proporcionar aislamiento de recursos y están muy extendidos en los despliegues de aplicaciones modernas. Las máquinas virtuales abstraen el hardware y emulan el sistema operativo completo. Por otro lado, los contenedores usan el sistema operativo subyacente del host para ejecutarse, por lo que son mucho más livianos, ya que solo necesitan incluir el código y las dependencias de una aplicación específica.
 
-## How to run a container image
-In this section, we will run a container image from a public registry. We will use the [quay.io](https://quay.io/) registry, which is a public registry that is hosted by Red Hat.
+## Cómo ejecutar una imagen de contenedor
+En esta sección, ejecutaremos una imagen de contenedor desde un registro público. Usaremos el registro [quay.io](https://quay.io/), que es un registro público alojado por Red Hat.
 
-Inside your terminal type the following command:
+Dentro de tu terminal, escribí el siguiente comando:
 ```bash
 podman run quay.io/podman/hello
 ```
-Your output should look something like this:
+Tu salida debería verse parecida a esto:
 ```bash
 Trying to pull quay.io/podman/hello:latest...
 Getting image source signatures
@@ -64,14 +60,14 @@ Documents: https://docs.podman.io
 Twitter:   @Podman_io
 ```
 
-You may notice before the output of the hello world container, there are a few lines of output showing the container image being downloaded from Quay.
+Es posible que notes que, antes de la salida del contenedor de "hola mundo", hay algunas líneas que muestran cómo se descarga la imagen del contenedor desde Quay.
 
-## How to build a container image
-In this section, we will build a container image using a Containerfile. A Containerfile (sometimes called Dockerfile). Each line in the file is a command that will be executed, in order, when the container image is built.
+## Cómo construir una imagen de contenedor
+En esta sección, construiremos una imagen de contenedor usando un Containerfile. Un Containerfile (a veces llamado Dockerfile). Cada línea del archivo es un comando que se ejecutará, en orden, cuando se construya la imagen del contenedor.
 
-> The order of the commands is important, as containers use a layered filesystem such that when changes are made, only the layer that needs to be changed onwards is updated. So layers that rarely change, such as the dependencies, should be at the top of the Containerfile, and layers that change frequently, such as the application code, should be at the bottom.
+> El orden de los comandos es importante, ya que los contenedores usan un sistema de archivos en capas, de modo que cuando se hacen cambios, solo se actualiza la capa que necesita cambiar y las siguientes. Por lo tanto, las capas que rara vez cambian, como las dependencias, deberían ir al principio del Containerfile, y las capas que cambian con frecuencia, como el código de la aplicación, deberían ir al final.
 
-The Containerfile we provided you looks like this:
+El Containerfile que te proporcionamos se ve así:
 ```Dockerfile
 # Set the base image to the UBI 9 Python 3.11 image provided by Red Hat
 FROM registry.access.redhat.com/ubi9/python-311:1-41
@@ -89,75 +85,75 @@ EXPOSE 5000
 CMD flask run --host=0.0.0.0
 ```
 
-This Containerfile uses a base image provided by Red Hat, which is a minimal operating system that includes Python 3.11. It then copies in the requirements for a sample Flask application we provided, installs them inside the container, copies the rest of the application code, specifies that the container should listen on port 5000, and then sets the default command to run the Flask application.
+(Los comentarios del archivo, en orden: establece la imagen base como la imagen UBI 9 con Python 3.11 provista por Red Hat; establece el directorio de trabajo dentro del contenedor en /app; copia el archivo requirements.txt del host local al directorio /app del contenedor; instala las dependencias de Python desde requirements.txt; copia los archivos de la aplicación del host local al directorio /app del contenedor; expone el puerto 5000; establece flask run como comando predeterminado del contenedor.)
 
-Now let's build the container image and name it `my_app`. In your terminal, type the following command:
+Este Containerfile usa una imagen base provista por Red Hat, que es un sistema operativo mínimo que incluye Python 3.11. Luego copia los requisitos de una aplicación Flask de ejemplo que te proporcionamos, los instala dentro del contenedor, copia el resto del código de la aplicación, especifica que el contenedor debe escuchar en el puerto 5000 y, por último, establece como comando predeterminado la ejecución de la aplicación Flask.
+
+Ahora construyamos la imagen del contenedor y llamémosla `my_app`. En tu terminal, escribí el siguiente comando:
 ```bash
 podman build -t my_app .
 ```
 
-You should see output that indicates each layer of the container image being built.
+Deberías ver una salida que indica cada capa de la imagen del contenedor a medida que se construye.
 
-To see the list of all images on your system, run this command:
+Para ver la lista de todas las imágenes en tu sistema, ejecutá este comando:
 ```bash
 podman images
 ```
 
-## Run your container image
-Now that you've built a container image `my_app`, you can run it using the following command:
+## Ejecutá tu imagen de contenedor
+Ahora que construiste una imagen de contenedor `my_app`, podés ejecutarla con el siguiente comando:
 ```bash
 podman run --rm -d -p 5000:5000 --name api my_app
 ```
-Let's explain what all of the different options on the `podman run` command are doing:
-- `--rm` this automatically removes the container and its file system after stopping the container
-- `-d` detached mode, this runs the container as a background process
-- `-p` expose a port on the container to the host machine given the argument `hostPort:containerPort`. So in the above command, we are exposing port `5000` inside the container on port `5000` on the host machine
-- `--name` assign a name to your running container, in our case, `api`. If no name is assigned, a random string is generated
-- `my_app` is the name of the container image to run.
+Expliquemos qué hacen las diferentes opciones del comando `podman run`:
+- `--rm` elimina automáticamente el contenedor y su sistema de archivos después de detenerlo
+- `-d` modo desacoplado (detached), ejecuta el contenedor como un proceso en segundo plano
+- `-p` expone un puerto del contenedor en la máquina host, dado el argumento `puertoHost:puertoContenedor`. Entonces, en el comando anterior, estamos exponiendo el puerto `5000` dentro del contenedor en el puerto `5000` de la máquina host
+- `--name` asigna un nombre a tu contenedor en ejecución, en nuestro caso, `api`. Si no se asigna un nombre, se genera una cadena aleatoria
+- `my_app` es el nombre de la imagen de contenedor que se va a ejecutar.
 
-Now that the container is running, you can query the Flask application running inside the container by running the following commands:
+Ahora que el contenedor está en ejecución, podés consultar la aplicación Flask que corre dentro del contenedor ejecutando los siguientes comandos:
 ```bash
 curl localhost:5000
 curl localhost:5000/your-name-here
 ```
 
-Once you have finished testing, stop the container:
+Cuando hayas terminado de probar, detené el contenedor:
 ```bash
 podman stop api
 ```
 
-## Deploying your container image to a registry
-Now that you have built a container image, you can deploy it to a registry. A registry is a place to store container images. You can think of it as a GitHub for container images.
+## Subir tu imagen de contenedor a un registro
+Ahora que construiste una imagen de contenedor, podés subirla a un registro. Un registro es un lugar donde se almacenan imágenes de contenedores. Podés pensarlo como un GitHub para imágenes de contenedores.
 
-In this lab, we will use [quay.io](https://quay.io/), which is a public registry that is hosted by Red Hat.
+En este laboratorio, usaremos [quay.io](https://quay.io/), que es un registro público alojado por Red Hat.
 
-To deploy your container image to quay.io, you will need to sign in with your Red Hat account. You can do that [here](https://quay.io/).
+Para subir tu imagen de contenedor a quay.io, necesitarás iniciar sesión con tu cuenta de Red Hat. Podés hacerlo [aquí](https://quay.io/).
 
-Once you have signed in, you can click "Create New Repository" and give it a name. For this lab, we will use `my_app`. Make the repository public, select the option for an empty repository, and click "Create Public Repository".
+Una vez que hayas iniciado sesión, podés hacer clic en "Create New Repository" y darle un nombre. Para este laboratorio, usaremos `my_app`. Hacé que el repositorio sea público, seleccioná la opción de repositorio vacío y hacé clic en "Create Public Repository".
 
-Now that you have created a repository, you can push your container image to it. First, you will need to log in to quay on your local machine. To do this, run the following command and enter your Red Hat credentials when prompted:
+Ahora que creaste un repositorio, podés subir tu imagen de contenedor a él. Primero, tendrás que iniciar sesión en quay en tu máquina local. Para ello, ejecutá el siguiente comando e ingresá tus credenciales de Red Hat cuando se te pidan:
 ```bash
 podman login quay.io
 ```
 
-Now that you are logged in, you can push your container image to quay.io. To do this, you will need to tag your container image with the name of the repository you created, naming it the same thing as your remote repo. Run the following command to do this:
+Ahora que iniciaste sesión, podés subir tu imagen de contenedor a quay.io. Para ello, tendrás que etiquetar tu imagen de contenedor con el nombre del repositorio que creaste, nombrándola igual que tu repositorio remoto. Ejecutá el siguiente comando para hacerlo:
 ```bash
 podman tag my_app quay.io/<your-username>/my_app
 ```
 
-You can then push your container image to quay.io by running the following command:
+Luego podés subir tu imagen de contenedor a quay.io ejecutando el siguiente comando:
 ```bash
 podman push quay.io/<your-username>/my_app
 ```
 
-Your container image is now published to the remote repository if you got this message:
+Tu imagen de contenedor ya está publicada en el repositorio remoto si obtuviste este mensaje:
 ```bash
 ...
 Writing manifest to image destination
 ```
 
-If you want, you can have a friend pull your container image and run it on their machine. Or even run it on a container platform such as OpenShift (stay tuned)!!
 
-## Acknowledgements
 
-This lab is heavily derrived from the [Getting Started with Containers Assignment](https://github.com/BURGS-VT/containers-assignment) developed by Ryan Gniadek and [Margaret Ellis](https://people.cs.vt.edu/~maellis1/) for Virginia Tech.
+
