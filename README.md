@@ -1,3 +1,7 @@
+<div align="center">
+         <img width="738" height="246" alt="imagen" src="https://github.com/user-attachments/assets/588bd697-af99-459a-99a3-82ce6ec6d583" />
+</div>
+
 # Demo de Podman
 
 ## Requisitos previos
@@ -159,6 +163,10 @@ Tu imagen de contenedor ya está publicada en el repositorio remoto si obtuviste
 Writing manifest to image destination
 ```
 
-
-
+<div align="center">
+         <img width="288" height="288" alt="seal-shy" src="https://github.com/user-attachments/assets/ed6f8407-97ad-40a2-ac80-9917eab15c74" />
+</div>
+<div align="center">
+         Gracias!
+</div>
 
