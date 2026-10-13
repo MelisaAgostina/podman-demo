@@ -32,6 +32,11 @@ Tanto los contenedores como las máquinas virtuales son formas de proporcionar a
 En esta sección, ejecutaremos una imagen de contenedor desde un registro público. Usaremos el registro [quay.io](https://quay.io/), que es un registro público alojado por Red Hat.
 
 Dentro de tu terminal, escribí el siguiente comando:
+
+```bash
+podman machine start
+```
+
 ```bash
 podman run quay.io/podman/hello
 ```
