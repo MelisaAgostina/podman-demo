@@ -16,7 +16,7 @@ Por último, necesitarás tener una cuenta de Red Hat. Podés crear una [aquí](
 ## Configuración de la tarea
 Dentro de VSCode, abrí una terminal y ejecutá el siguiente comando:
 ```bash
-git clone https://github.com/ryangniadek/podman-demo.git
+git clone https://github.com/MelisaAgostina/podman-demo.git
 ```
 
 Luego abrí la carpeta en VSCode.
@@ -124,8 +124,8 @@ Expliquemos qué hacen las diferentes opciones del comando `podman run`:
 
 Ahora que el contenedor está en ejecución, podés consultar la aplicación Flask que corre dentro del contenedor ejecutando los siguientes comandos:
 ```bash
-curl localhost:5000
-curl localhost:5000/your-name-here
+podman machine ssh "curl -s localhost:5000"
+podman machine ssh "curl -s localhost:5000/grupo4"
 ```
 
 Cuando hayas terminado de probar, detené el contenedor:
@@ -162,6 +162,63 @@ Tu imagen de contenedor ya está publicada en el repositorio remoto si obtuviste
 ...
 Writing manifest to image destination
 ```
+
+## Conectar dos contenedores
+Hasta ahora accediste a tu contenedor desde tu propia máquina a través de un puerto publicado (`-p`). Los contenedores también pueden comunicarse directamente entre sí, siempre que estén en la misma red. En esta sección, ejecutaremos la API de `my_app` en un contenedor y la llamaremos desde un segundo contenedor.
+
+Primero, creá una red:
+```bash
+podman network create labnet
+```
+
+Iniciá la API en esa red. Notá que no hay opción `-p`: los contenedores que están en la misma red pueden comunicarse sin publicar puertos. Publicar un puerto solo hace falta para acceder a un contenedor desde afuera, por ejemplo desde tu navegador.
+```bash
+podman run --rm -d --network labnet --name api my_app
+```
+
+Ahora ejecutá un segundo contenedor, el cliente, en la misma red. Este llama a la API usando solamente el nombre del contenedor, `api`:
+```bash
+podman run --rm --network labnet --name client my_app curl -s http://api:5000
+```
+
+El comando que va después del nombre de la imagen reemplaza el comando predeterminado de la imagen, por lo que este contenedor ejecuta `curl` en lugar de iniciar Flask. Deberías ver la respuesta de la API:
+```
+{"msg":"Hello, Shadowman!"}
+```
+
+El cliente encontró la API por su nombre porque Podman ejecuta un servicio DNS integrado en las redes creadas por el usuario, que traduce los nombres de los contenedores en direcciones IP. Para ver la dirección IP del contenedor de la API y los detalles de la red, ejecutá:
+```bash
+podman inspect api --format "{{.NetworkSettings.Networks.labnet.IPAddress}}"
+podman network inspect labnet
+```
+
+También podés llamar a la API usando esa dirección IP en lugar del nombre:
+```bash
+podman run --rm --network labnet my_app curl -s http://<ip-de-la-api>:5000
+```
+
+Cuando termines, detené la API y eliminá la red:
+```bash
+podman stop api
+podman network rm labnet
+```
+
+## Por qué es importante
+Los contenedores son la forma en que se despliega la mayor parte del software moderno. Las empresas empaquetan las aplicaciones de esta manera para que se ejecuten de forma idéntica en una laptop, un servidor o la nube. También son la base de plataformas como Kubernetes y OpenShift. La introducción sobre "contenedores vs. máquinas virtuales" explica el porqué: los contenedores son mucho más livianos porque comparten el sistema operativo del host en lugar de emular uno completamente nuevo.
+
+### Las aplicaciones reales no son un solo contenedor
+Una aplicación moderna rara vez vive en un único contenedor. Lo habitual es dividirla en piezas pequeñas e independientes (por ejemplo, una API, una base de datos y un servicio de autenticación), cada una en su propio contenedor. Esta forma de organizar una aplicación se llama arquitectura de microservicios. Para que funcione, esas piezas necesitan comunicarse entre sí, y por eso la sección "Conectar dos contenedores" es una parte central del laboratorio y no un extra.
+
+### Qué demuestra la comunicación entre contenedores
+- **Aislamiento por defecto:** un contenedor no es accesible desde afuera a menos que publiques un puerto con `-p`. Dos contenedores en la misma red sí pueden comunicarse sin publicar nada, así que solo exponés al exterior lo que realmente tiene que ser público (por ejemplo, la API), y el resto queda protegido dentro de la red.
+- **Nombres en lugar de direcciones IP:** en una red creada por el usuario, Podman incluye un servicio DNS que traduce el nombre de un contenedor (como `api`) en su dirección IP. Esto importa porque las IP de los contenedores cambian cada vez que se recrean, mientras que los nombres se mantienen estables. Es como llamar a alguien por su nombre en la agenda del teléfono en lugar de memorizar su número.
+- **El modelo cliente-servidor:** un contenedor ofrece un servicio (la API) y otro lo consume (el cliente con `curl`), usando el mismo protocolo HTTP que usa cualquier navegador o aplicación en internet.
+
+### Cómo se conecta con lo que viene
+Estos mismos conceptos (redes virtuales, resolución de nombres, puertos publicados y no publicados) son los que Kubernetes y OpenShift aplican a gran escala, con cientos o miles de contenedores distribuidos en muchos servidores. Si entendés cómo dos contenedores se encuentran en una red de Podman, ya tenés la idea base de cómo funciona la comunicación dentro de esas plataformas.
+
+### Qué se llevan de este laboratorio
+Al terminar, habrás practicado el ciclo completo: **construir** una imagen, **ejecutarla**, **conectarla** con otros contenedores y **compartirla** en un registro. Es la base sobre la que se apoya el despliegue de aplicaciones modernas.
 
 <div align="center">
          <img width="288" height="288" alt="seal-shy" src="https://github.com/user-attachments/assets/ed6f8407-97ad-40a2-ac80-9917eab15c74" />
